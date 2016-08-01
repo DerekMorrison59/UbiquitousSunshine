@@ -70,7 +70,7 @@ public class DataLayerListenerService extends WearableListenerService {
 
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {
-        LOGD(TAG, "onDataChanged: " + dataEvents);
+        //LOGD(TAG, "onDataChanged: " + dataEvents);
         if (!mGoogleApiClient.isConnected() || !mGoogleApiClient.isConnecting()) {
             ConnectionResult connectionResult = mGoogleApiClient
                     .blockingConnect(30, TimeUnit.SECONDS);
@@ -110,7 +110,7 @@ public class DataLayerListenerService extends WearableListenerService {
             // 16 is the low
             // 21:42 - JUL 31 2016 is the time and date the weather info was received on the mobile
             String newWeather = new String(messageEvent.getData(), StandardCharsets.UTF_8);
-            Log.d(TAG, "onMessageReceived: " + newWeather);
+            //Log.d(TAG, "onMessageReceived: " + newWeather);
 
             List<String> weatherDetails = Arrays.asList(newWeather.split(","));
 

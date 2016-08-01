@@ -101,7 +101,7 @@ public class SendToWearService extends IntentService {
         //Log.d(LOG_TAG, "updateWear *********");
 
         if (null == mGoogleApiClient) {
-            Log.d(LOG_TAG, "null == msGoogleApiClient");
+            //Log.d(LOG_TAG, "null == msGoogleApiClient");
             return;
         }
 
@@ -120,7 +120,7 @@ public class SendToWearService extends IntentService {
             String mLowTemp = sp.getString(SunshineSyncAdapter.LAST_LOW_TEMP, "");
             String mIcon = sp.getString(SunshineSyncAdapter.LAST_ICON, "800");
             String updated = sp.getString(SunshineSyncAdapter.LAST_UPDATE, "");
-            Log.d(LOG_TAG, "updateWear getInfoFromSharedPrefs - Hi Temp: " + mHighTemp + "  Low Temp: " + mLowTemp + " weather ID: " + mIcon + " updated: " + updated);
+            //Log.d(LOG_TAG, "updateWear getInfoFromSharedPrefs - Hi Temp: " + mHighTemp + "  Low Temp: " + mLowTemp + " weather ID: " + mIcon + " updated: " + updated);
 
             String weather = mIcon + "," + mHighTemp + "," + mLowTemp + "," + updated;
             byte[] currentWeather = weather.getBytes(StandardCharsets.UTF_8);
