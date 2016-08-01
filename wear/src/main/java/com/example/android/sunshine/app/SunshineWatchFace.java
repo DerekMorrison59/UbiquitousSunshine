@@ -95,11 +95,6 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
         }
     }
 
-    // keys for shared prefs
-    private final String LAST_HIGH_TEMP = "LastHighTemp";
-    private final String LAST_LOW_TEMP = "LastLowTemp";
-    private final String LAST_ICON = "LastIcon";
-
     private class Engine extends CanvasWatchFaceService.Engine {
         final Handler mUpdateTimeHandler = new EngineHandler(this);
         boolean mRegisteredTimeZoneReceiver = false;
@@ -152,18 +147,22 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
             mBackgroundPaint = new Paint();
             mBackgroundPaint.setColor(resources.getColor(R.color.background));
 
+            // Paint used for the time row
             int textColor = ContextCompat.getColor(getApplicationContext(), R.color.digital_text);
             mTextPaint = new Paint();
             mTextPaint = createTextPaint(textColor);
 
+            // Paint used for the date row
             mDatePaint = new Paint();
             mDatePaint = createTextPaint(textColor);
             mDatePaint.setTextSize(resources.getDimension(R.dimen.digital_date_size));
 
+            // Paint used for the temperature row
             mTempPaint = new Paint();
             mTempPaint = createTextPaint(textColor);
             mTempPaint.setTextSize(resources.getDimension(R.dimen.weather_text_size));
 
+            // Paint used for the updated row
             int updatedColor = ContextCompat.getColor(getApplicationContext(), R.color.updated_text);
             mUpdatedPaint = new Paint();
             mUpdatedPaint = createTextPaint(updatedColor);
@@ -259,11 +258,11 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
             mIcon = sp.getString(DataLayerListenerService.LAST_ICON, "800");
             mUpdated = "Updated: " + sp.getString(DataLayerListenerService.LAST_UPDATE, "");
 
-            // try to avoid a bad weather ID
+            // try to avoid a bad weather data
+            if (mHighTemp.length() < 1) mHighTemp = "-";
+            if (mLowTemp.length() < 1) mLowTemp = "-";
             if (mIcon.length() < 1) mIcon = "800";
-
             //Log.d(LOG_TAG, "getInfoFromSharedPrefs - Last Hi Temp: " + mHighTemp + "  Last Low Temp: " + mLowTemp + " Icon: " + mIcon);
-
         }
 
         @Override
@@ -336,6 +335,8 @@ public class SunshineWatchFace extends CanvasWatchFaceService {
             invalidate();
         }
 
+        // this is necessary to hide / show the bottom data (icon, temperatures & updated)
+        // when a PeekCard appears or disappears
         @Override
         public void onPeekCardPositionUpdate (Rect rect) {
             //Log.d(LOG_TAG, "onPeekCardPositionUpdate");
