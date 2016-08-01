@@ -3,4 +3,5 @@
     <color name="background">#000000</color>
     <color name="background2">#03A9F4</color>   <!-- Light Blue 500 -->
     <color name="digital_text">#ffffff</color>
+    <color name="updated_text">#b0ffffff</color>
 </resources>

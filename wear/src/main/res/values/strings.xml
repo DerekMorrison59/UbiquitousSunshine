@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">wear</string>
     <string name="my_digital_name">A Sunshine Face</string>
+    <string name="watchface_date_format">EEE, MMM dd yyyy</string>
 </resources>
