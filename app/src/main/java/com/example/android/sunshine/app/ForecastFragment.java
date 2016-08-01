@@ -17,6 +17,7 @@ package com.example.android.sunshine.app;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.TypedArray;
@@ -46,6 +47,7 @@ import android.widget.AbsListView;
 import android.widget.TextView;
 
 import com.example.android.sunshine.app.data.WeatherContract;
+import com.example.android.sunshine.app.sync.SendToWearService;
 import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
 
 /**
@@ -150,8 +152,23 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             openPreferredLocationInMap();
             return true;
         }
+        // the user has requested that current weather info be sent to the wearable now
+        if (id == R.id.action_updateWear) {
+            updateWear();
+            return true;
+        }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    // send latest weather info to the wearable
+    private void updateWear() {
+        Context context = getContext();
+        Intent msgIntent = new Intent(context, SendToWearService.class);
+
+        // this intent fires off the SendToWearService
+        context.startService(msgIntent);
+        //Log.d(LOG_TAG, "updateWear *********  startService called!");
     }
 
     @Override
