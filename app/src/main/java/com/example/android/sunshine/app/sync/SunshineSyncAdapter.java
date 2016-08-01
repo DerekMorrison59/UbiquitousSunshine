@@ -329,7 +329,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                     //Log.d(LOG_TAG, "getWeatherDataFromJson - High: " + high + " Low: " + low + " weather ID: " + weatherId);
 
                     Date date = new Date(System.currentTimeMillis());
-                    String dateFormat = "HH:mm - MMM dd yyyy";
+                    String dateFormat = getContext().getString(R.string.updated_time_date_format);
                     SimpleDateFormat sdf = new SimpleDateFormat(dateFormat); // Set your date format
                     String shortDate = sdf.format(date);
 
