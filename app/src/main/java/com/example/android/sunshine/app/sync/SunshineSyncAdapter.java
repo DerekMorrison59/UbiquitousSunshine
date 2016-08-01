@@ -49,6 +49,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 
@@ -64,7 +66,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     private static final int WEATHER_NOTIFICATION_ID = 3004;
 
 
-    private static final String[] NOTIFY_WEATHER_PROJECTION = new String[] {
+    public static final String[] NOTIFY_WEATHER_PROJECTION = new String[] {
             WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
             WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
             WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
@@ -72,10 +74,10 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     };
 
     // these indices must match the projection
-    private static final int INDEX_WEATHER_ID = 0;
-    private static final int INDEX_MAX_TEMP = 1;
-    private static final int INDEX_MIN_TEMP = 2;
-    private static final int INDEX_SHORT_DESC = 3;
+    public static final int INDEX_WEATHER_ID = 0;
+    public static final int INDEX_MAX_TEMP = 1;
+    public static final int INDEX_MIN_TEMP = 2;
+    public static final int INDEX_SHORT_DESC = 3;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({LOCATION_STATUS_OK, LOCATION_STATUS_SERVER_DOWN, LOCATION_STATUS_SERVER_INVALID,  LOCATION_STATUS_UNKNOWN, LOCATION_STATUS_INVALID})
@@ -87,13 +89,19 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     public static final int LOCATION_STATUS_UNKNOWN = 3;
     public static final int LOCATION_STATUS_INVALID = 4;
 
+    // keys for shared prefs
+    public static final String LAST_HIGH_TEMP = "LastHighTemp";
+    public static final String LAST_LOW_TEMP = "LastLowTemp";
+    public static final String LAST_ICON = "LastIcon";
+    public static final String LAST_UPDATE = "LastUpdate";
+
     public SunshineSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
     }
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
-        Log.d(LOG_TAG, "Starting sync");
+//        Log.d(LOG_TAG, "Starting sync");
         String locationQuery = Utility.getPreferredLocation(getContext());
 
         // These two need to be declared outside the try/catch
@@ -316,6 +324,30 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 high = temperatureObject.getDouble(OWM_MAX);
                 low = temperatureObject.getDouble(OWM_MIN);
 
+                // take today's result and save it in the shared prefs
+                if (0 == i) {
+                    //Log.d(LOG_TAG, "getWeatherDataFromJson - High: " + high + " Low: " + low + " weather ID: " + weatherId);
+
+                    Date date = new Date(System.currentTimeMillis());
+                    String dateFormat = "HH:mm - MMM dd yyyy";
+                    SimpleDateFormat sdf = new SimpleDateFormat(dateFormat); // Set your date format
+                    String shortDate = sdf.format(date);
+
+                    String mIcon = String.valueOf(weatherId);
+                    String mHighTemp = String.valueOf(Math.round(high));
+                    String mLowTemp = String.valueOf(Math.round(low));
+
+                    SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getContext());
+                    SharedPreferences.Editor editor = sp.edit();
+                    editor.putString(LAST_HIGH_TEMP, mHighTemp);
+                    editor.putString(LAST_LOW_TEMP, mLowTemp);
+                    editor.putString(LAST_ICON, mIcon);
+                    editor.putString(LAST_UPDATE, shortDate);
+                    editor.apply();
+
+                    //Log.d(LOG_TAG, "Pushed into SharedPreferences - High: " + mHighTemp + " Low: " + mLowTemp + " weather ID: " + mIcon + " Updated: " + shortDate);
+                }
+
                 ContentValues weatherValues = new ContentValues();
 
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_LOC_KEY, locationId);
@@ -347,8 +379,11 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 updateWidgets();
                 updateMuzei();
                 notifyWeather();
+
+                // trigger the service to send the latest weather to the wear device
+                updateWear();
             }
-            Log.d(LOG_TAG, "Sync Complete. " + cVVector.size() + " Inserted");
+            //Log.d(LOG_TAG, "Sync Complete. " + cVVector.size() + " Inserted");
             setLocationStatus(getContext(), LOCATION_STATUS_OK);
 
         } catch (JSONException e) {
@@ -356,6 +391,16 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             e.printStackTrace();
             setLocationStatus(getContext(), LOCATION_STATUS_SERVER_INVALID);
         }
+    }
+
+
+    private void updateWear() {
+        Context context = getContext();
+        Intent msgIntent = new Intent(context, SendToWearService.class);
+
+        // this intent fires off the SendToWearService
+        context.startService(msgIntent);
+        //Log.d(LOG_TAG, "updateWear *********  startService called!");
     }
 
     private void updateWidgets() {
